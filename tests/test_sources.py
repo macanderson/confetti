@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 import pytest
@@ -9,8 +10,11 @@ from confetti import Environment
 
 
 def test_env_file_load_set_unset(tmp_path: Path):
+    # Copy fixture file to tmp_path
+    fixture_file = Path(__file__).parent / "fixtures" / "test.env"
     env_file = tmp_path / ".env"
-    env_file.write_text("A=1\n")
+    shutil.copy2(fixture_file, env_file)
+
     e = Environment("dev")
     e.register_source(env_file)
     cfg = e.get_config()
@@ -25,8 +29,11 @@ def test_env_file_load_set_unset(tmp_path: Path):
 
 
 def test_yaml_flatten_and_set(tmp_path: Path):
+    # Copy fixture file to tmp_path
+    fixture_file = Path(__file__).parent / "fixtures" / "database.yaml"
     yml = tmp_path / "c.yaml"
-    yml.write_text("database:\n  url: postgres://localhost\n  pool: 5\n")
+    shutil.copy2(fixture_file, yml)
+
     e = Environment("dev")
     e.register_source(yml)
     cfg = e.get_config()
@@ -38,8 +45,11 @@ def test_yaml_flatten_and_set(tmp_path: Path):
 
 
 def test_json_flatten_and_unset(tmp_path: Path):
+    # Copy fixture file to tmp_path
+    fixture_file = Path(__file__).parent / "fixtures" / "service.json"
     js = tmp_path / "c.json"
-    js.write_text(json.dumps({"service": {"host": "127.0.0.1", "port": 8000}}))
+    shutil.copy2(fixture_file, js)
+
     e = Environment("dev")
     e.register_source(js)
     cfg = e.get_config()
@@ -51,8 +61,11 @@ def test_json_flatten_and_unset(tmp_path: Path):
 
 
 def test_ini_flatten_and_set(tmp_path: Path):
+    # Copy fixture file to tmp_path
+    fixture_file = Path(__file__).parent / "fixtures" / "config.ini"
     ini = tmp_path / "c.ini"
-    ini.write_text("[s]\nkey=value\n")
+    shutil.copy2(fixture_file, ini)
+
     e = Environment("dev")
     e.register_source(ini)
     cfg = e.get_config()
@@ -64,10 +77,14 @@ def test_ini_flatten_and_set(tmp_path: Path):
 
 
 def test_merge_precedence(tmp_path: Path):
+    # Copy fixture files to tmp_path
+    fixture_a = Path(__file__).parent / "fixtures" / "a.env"
+    fixture_b = Path(__file__).parent / "fixtures" / "b.yaml"
     a = tmp_path / "a.env"
-    a.write_text("X=1\n")
     b = tmp_path / "b.yaml"
-    b.write_text("X: 2\n")
+    shutil.copy2(fixture_a, a)
+    shutil.copy2(fixture_b, b)
+
     e = Environment("dev")
     e.register_sources(a, b)
     cfg = e.get_config()
