@@ -1,4 +1,0 @@
-database:
-  url: postgres://localhost
-  pool: 5
-  max: 10
