@@ -1,0 +1,55 @@
+# Sample Confetti configuration file
+# This file defines configuration sources for different environments
+
+environments:
+  # Production environment configuration
+  production:
+    sources:
+      # Example YAML configuration 
+      - path: ./a.yaml
+        name: "Main Config"
+        filter:
+          depth: 3
+      
+      # Example JSON configuration
+      - path: ./b.json
+        name: "JSON Config"
+      
+      # Example INI configuration
+      - path: ./c.ini
+        name: "INI Config"
+
+  # Development environment configuration
+  development:
+    sources:
+      # Development config files
+      - path: ./a.yaml
+        name: "Dev YAML Config"
+      
+      # Test environment file
+      - path: ./test.env
+        name: "Dev Environment"
+        writable: true
+
+  # Testing environment configuration
+  testing:
+    sources:
+      # Test configuration
+      - path: ./test.env
+        name: "Test Config"
+        filter:
+          include_regex: "^TEST_"
+      
+      # Test data files from fixtures
+      - path: ./tests/fixtures/a.yaml
+        depth: 2
+      
+      - path: ./tests/fixtures/b.json
+        filter:
+          hierarchical_spec:
+            api:
+              endpoint: true
+              key: true
+      
+      - path: ./tests/fixtures/c.ini
+        name: "Test INI"
