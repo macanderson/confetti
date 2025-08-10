@@ -11,7 +11,7 @@ for arg in "$@"; do
 done
 
 # Extract version from pyproject.toml
-RAW_VERSION=$(grep -m1 '^version\s*=' pyproject.toml | sed -E "s/version\s*=\s*\"([^\"]+)\"/\1/")
+RAW_VERSION=$(grep -m1 '^version\s*=' pyproject.toml | sed -E 's/^version\s*=\s*"([^"]+)".*/\1/')
 
 if [ -z "$RAW_VERSION" ]; then
     echo "Error: Could not extract version from pyproject.toml"
@@ -23,7 +23,6 @@ IFS='.' read -r MAJOR MINOR PATCH_EXTRA <<< "$RAW_VERSION"
 
 # Handle possible pre-release suffixes in PATCH
 PATCH=$(echo "$PATCH_EXTRA" | sed -E 's/[^0-9].*//')
-# EXTRA=$(echo "$PATCH_EXTRA" | sed -E 's/^[0-9]+//')
 
 PATCH=$((PATCH + 1))
 
@@ -48,8 +47,9 @@ fi
 
 # Update version in pyproject.toml
 sed -i.bak -E "s/^version\s*=\s*\"[^\"]+\"/version = \"${NEW_VERSION}\"/" pyproject.toml
+rm -f pyproject.toml.bak
 
-git add .
+git add pyproject.toml
 git commit -m "Release v${NEW_VERSION}"
 git tag -a "v${NEW_VERSION}" -m "$RELEASE_TITLE"
 git push origin main --follow-tags
