@@ -1,3 +1,4 @@
+"""Core components of the Confetti configuration management system."""
 from .environment import Environment
 from .config import Config
 from .source import Source, RegisteredSource

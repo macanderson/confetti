@@ -1,3 +1,5 @@
+"""Merging logic for multiple configuration sources."""
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -11,6 +13,19 @@ from .types import ProvenanceRecord
 def merge_sources(
     registered_sources: List[RegisteredSource],
 ) -> Tuple[Dict[str, Any], Dict[str, ProvenanceRecord]]:
+    """Merge multiple sources into a single configuration.
+    
+    Sources are merged in order with later sources overriding
+    earlier ones for the same keys.
+    
+    Args:
+        registered_sources: List of registered sources to merge.
+        
+    Returns:
+        Tuple of (effective_config, provenance_map) where:
+        - effective_config is the merged configuration dictionary
+        - provenance_map tracks which source each key came from
+    """
     effective: Dict[str, Any] = {}
     provenance: Dict[str, ProvenanceRecord] = {}
 

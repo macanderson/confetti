@@ -1,80 +1,509 @@
 # Confetti 🎉
 
-Confetti is a cli tool and a python library that enables developers to source configuration variables and secrets from multiple sources into unified configuration objects using Github environments to sync configurations across multiple environments and hosting services.
+[![PyPI Version](https://img.shields.io/pypi/v/confetti)](https://pypi.org/project/confetti/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/confetti)](https://pypi.org/project/confetti/)
+[![License](https://img.shields.io/github/license/confetti-dev/confetti)](https://github.com/confetti-dev/confetti/blob/main/LICENSE)
+[![Tests](https://github.com/confetti-dev/confetti/workflows/Tests/badge.svg)](https://github.com/confetti-dev/confetti/actions)
+[![Coverage](https://codecov.io/gh/confetti-dev/confetti/branch/main/graph/badge.svg)](https://codecov.io/gh/confetti-dev/confetti)
+[![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Documentation](https://img.shields.io/badge/docs-latest-blue)](https://confetti.readthedocs.io)
 
-## Getting Started
+**Confetti** is a powerful Python library for managing configuration from multiple sources with ease. It allows you to load configuration variables and secrets from various sources (environment files, JSON, YAML, INI, Redis, GitHub Actions) and merge them into a unified configuration object with conflict resolution, type conversion, and source tracking.
 
-To get started, install the package globally to use the cli:
+## ✨ Features
+
+- **📁 Multiple Configuration Sources**: Support for `.env`, JSON, YAML, INI files, Redis, and GitHub environment variables
+- **🔄 Automatic Merging**: Intelligently merge configurations from multiple sources with configurable precedence
+- **🔍 Source Tracking**: Track where each configuration value came from with detailed provenance
+- **🎯 Flexible Filtering**: Use regex patterns and hierarchical specs to include/exclude configuration keys
+- **💾 Two-way Sync**: Not just read - write back changes to configuration sources
+- **🔧 Type Safety**: Automatic type conversion and validation
+- **🌍 Environment Management**: Organize configurations by environment (development, staging, production)
+- **⚡ Async Support**: Async/await support for remote sources
+- **🔌 Extensible**: Easy to add custom configuration sources
+- **📦 Zero Config**: Works out of the box with sensible defaults
+
+## 📋 Table of Contents
+
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Configuration Sources](#configuration-sources)
+- [Advanced Usage](#advanced-usage)
+- [API Reference](#api-reference)
+- [CLI Usage](#cli-usage)
+- [Contributing](#contributing)
+- [License](#license)
+
+## 🚀 Installation
+
+### Using pip
 
 ```bash
-pip install -U confetti
+pip install confetti
 ```
 
-or use it as a python library:
+### Using uv (recommended)
+
+```bash
+uv add confetti
+```
+
+### Using Poetry
+
+```bash
+poetry add confetti
+```
+
+### Development Installation
+
+```bash
+git clone https://github.com/confetti-dev/confetti.git
+cd confetti
+pip install -e ".[dev]"
+```
+
+## 🎯 Quick Start
+
+### Basic Usage
 
 ```python
-from confetti import Environment, Config
+from confetti import Config, Environment
 from pathlib import Path
 
+# Create an environment
+env = Environment("development")
 
-environment = Environment("production")
-
-# add as many sources of config as you want, they will be loaded
-# in order and the last one will override the previous ones,
-# and merged into a single config object retrievable by the function
-# `environment.get_config()` which returns a `Config` object.
-# config files can include filters to only load certain keys matched by
-# a regex pattern exactly like how github has branch protection rules.
-# this provides apps with an optimal way to reduce secrets exposure and
-# be able to store non-secret static configuration in files that can
-# be included in the source code.
-environment.register_sources(
-  Path.cwd().parent.parent / ".env.local",
-  Path.cwd() / "child-directory" / "config.ini",
-  Path.cwd() / "config.yaml",
-  Path.cwd() / "config.json", # json files can be used to store config in a key-value format, use filters to only load certain keys. filters can be used to parse the keys of its children down to a configurable depth. example: `{"database": {"url": "postgres://postgres:postgres@localhost:5432/postgres"}}` can be parsed down to `{"database": {"url": "postgres://postgres:postgres@localhost:5432/postgres"}}` by using a filter like `{"database": {"url": true}}`
-  "redis://localhost:6379",
+# Register configuration sources (in order of precedence)
+env.register_sources(
+    Path(".env"),                    # Local environment variables
+    Path("config/base.yaml"),        # Base configuration
+    Path("config/development.json"), # Environment-specific config
 )
 
-# the program tracks the sources and their filters and retains a memory of which config values
-# come from which key in which source, and can be used to get the value of a key from a source.
+# Get merged configuration
+config = env.get_config()
 
-# the program can also be used to set the value of a key in a source using the memory
-# of sources and filters to find the source and key to set the value in.
+# Access configuration values
+database_url = config.get("DATABASE_URL")
+debug_mode = config.get("DEBUG", default=False)
 
-# example:
+# Get all configuration as a dictionary
+all_config = config.values()
+```
 
-config = environment.get_config()
-config.set("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/postgres") # sets the value in the config
+### Direct Config Usage
 
-# or set the value in a specific source:
+```python
+from confetti import Config
+from confetti.sources import EnvFileSource, YamlFileSource
 
-config.set("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/postgres", source="redis://localhost:6379") # sets the value in the redis key-value store, if the source is not specified, the program will use the default source, which is the first source registered in the array
+# Create sources directly
+env_source = EnvFileSource(Path(".env"))
+yaml_source = YamlFileSource(Path("config.yaml"))
 
-# if DATABASE_URL is not found in the sources, the program will create a new source
-# with the key and value and save it to the sources. If no source is specified, the program
-# saves the config to the default source, which is the first source registered in the array
-# used to construct the config object (environment.get_config([...])). or Config([...])
+# Create config with registered sources
+config = Config([
+    RegisteredSource(source=env_source),
+    RegisteredSource(source=yaml_source),
+])
 
+# Materialize and use
+config.materialize()
+print(config.get("API_KEY"))
+```
 
-config.unset("DATABASE_URL") # removes the key from the config
+## 📚 Configuration Sources
 
-config.save() # saves the config to the default source, which is the first source registered in the array
+### Environment Files (.env)
 
-# if the config is not saved, the next time the program is run, the value for DATABASE_URL
-# will not be set because it was not saved to the source.
+```python
+from pathlib import Path
 
+env.register_source(Path(".env"))
+env.register_source(Path(".env.local"))  # Local overrides
+```
 
-config.remove_source("redis://localhost:6379") # removes the redis key-value store from the config
+**.env file example:**
+```bash
+DATABASE_URL=postgresql://localhost:5432/mydb
+REDIS_URL=redis://localhost:6379
+API_KEY=secret_key_123
+DEBUG=true
+```
 
-# sources can be registered using file paths or server connection strings.
+### YAML Files
 
-# only key value stores can be used to set values, and currently only redis is supported.
+```python
+env.register_source(Path("config.yaml"))
+```
 
-# the program allows for new custom sources to be created by extending the `Source` class and implementing the `get` and `set` methods.
+**config.yaml example:**
+```yaml
+database:
+  host: localhost
+  port: 5432
+  name: myapp
+  pool_size: 10
 
-# example:
+cache:
+  backend: redis
+  ttl: 3600
 
+features:
+  - authentication
+  - notifications
+  - analytics
+```
+
+### JSON Files
+
+```python
+env.register_source(Path("settings.json"))
+```
+
+**settings.json example:**
+```json
+{
+  "api": {
+    "version": "v1",
+    "timeout": 30,
+    "rate_limit": 1000
+  },
+  "features": {
+    "dark_mode": true,
+    "beta_features": false
+  }
+}
+```
+
+### INI Files
+
+```python
+env.register_source(Path("config.ini"))
+```
+
+**config.ini example:**
+```ini
+[database]
+host = localhost
+port = 5432
+
+[cache]
+backend = redis
+ttl = 3600
+```
+
+### Redis Key-Value Store
+
+```python
+env.register_source("redis://localhost:6379")
+
+# With authentication and database selection
+env.register_source("redis://user:password@localhost:6379/0")
+
+# With key prefix
+from confetti.sources import RedisKeyValueSource
+redis_source = RedisKeyValueSource(
+    "redis://localhost:6379",
+    prefix="myapp:"
+)
+```
+
+### GitHub Environment Variables
+
+```python
+import os
+
+# Requires GITHUB_TOKEN environment variable
+env.register_source("github://owner/repo#production")
+
+# Or provide token explicitly
+from confetti.sources import GitHubEnvSource
+github_source = GitHubEnvSource(
+    "github://owner/repo#production",
+    token="ghp_your_token_here"
+)
+```
+
+## 🔧 Advanced Usage
+
+### Filtering Configuration Keys
+
+```python
+import re
+from confetti import Filter
+
+# Include only database-related keys
+env.register_source(
+    Path(".env"),
+    filter=Filter(include_regex=re.compile(r"^DB_.*"))
+)
+
+# Hierarchical filtering for structured sources
+env.register_source(
+    Path("config.yaml"),
+    filter=Filter(hierarchical_spec={
+        "database": {
+            "host": True,
+            "port": True,
+            # "password": False  # Exclude password
+        }
+    })
+)
+
+# Limit nesting depth
+env.register_source(
+    Path("deeply_nested.json"),
+    depth=2  # Only flatten up to 2 levels deep
+)
+```
+
+### Source Precedence and Merging
+
+```python
+# Sources registered later override earlier ones
+env.register_sources(
+    Path("config/base.yaml"),     # 1. Base configuration
+    Path("config/prod.yaml"),     # 2. Production overrides
+    Path(".env"),                 # 3. Environment variables (highest precedence)
+)
+
+config = env.get_config()
+
+# Check where a value came from
+provenance = config.provenance("DATABASE_URL")
+if provenance:
+    print(f"DATABASE_URL came from: {provenance.source_id}")
+    print(f"Loaded at: {provenance.timestamp_loaded}")
+```
+
+### Writing Configuration Changes
+
+```python
+# Make changes
+config.set("API_KEY", "new_secret_key")
+config.set("DEBUG", False)
+config.unset("DEPRECATED_SETTING")
+
+# Save changes back to sources
+config.save()
+
+# Or save to specific source
+config.set("REDIS_URL", "redis://newhost:6379", source="path/to/.env")
+config.save()
+```
+
+### Custom Configuration Sources
+
+```python
 from confetti.core.source import Source
+from typing import Dict, Any, Optional
 
-# etc...
+class CustomSource:
+    """Example custom configuration source."""
+    
+    def __init__(self, source_id: str):
+        self.id = source_id
+        self.name = f"custom:{source_id}"
+        self.extension = None
+        self._data = {}
+        
+    def load(self, filter=None, depth=None) -> Dict[str, Any]:
+        # Load your configuration here
+        return self._data
+        
+    def get(self, key: str) -> Optional[Any]:
+        return self._data.get(key)
+        
+    def set(self, key: str, value: Any) -> None:
+        self._data[key] = value
+        
+    def save(self) -> None:
+        # Persist changes
+        pass
+        
+    # ... implement other required methods ...
+
+# Use custom source
+custom = CustomSource("my_custom_source")
+env.add_source_type(custom)
+```
+
+### GitHub Environment Sync
+
+```python
+# Sync local config to GitHub environment
+config = env.get_config()
+
+# Dry run to see what would change
+changes = config.save_to_github(
+    "github://owner/repo#production",
+    dry_run=True
+)
+print(f"Would set: {changes['set']}")
+print(f"Would delete: {changes['delete']}")
+
+# Apply changes
+config.save_to_github("github://owner/repo#production")
+```
+
+### Environment-based Configuration
+
+```python
+import os
+
+# Determine environment
+current_env = os.getenv("APP_ENV", "development")
+
+# Create environment-specific configuration
+env = Environment(current_env)
+
+# Load base config and environment-specific overrides
+env.register_sources(
+    Path("config/base.yaml"),
+    Path(f"config/{current_env}.yaml"),
+    Path(".env.local"),  # Local overrides (not in version control)
+)
+
+config = env.get_config()
+```
+
+## 📖 API Reference
+
+### Core Classes
+
+#### `Environment`
+
+Manages configuration sources for a specific environment.
+
+```python
+env = Environment(name: str)
+env.register_source(path_or_uri, filter=None, depth=None, name=None, is_writable=True)
+env.register_sources(*paths_or_uris)
+env.get_config() -> Config
+env.add_source_type(source: Source)
+```
+
+#### `Config`
+
+Unified configuration object with source tracking.
+
+```python
+config.get(key: str, default=None) -> Any
+config.values() -> Dict[str, Any]
+config.set(key: str, value: Any, source: str = None)
+config.unset(key: str)
+config.save()
+config.reload()
+config.provenance(key: str) -> ProvenanceRecord
+config.remove_source(source_id: str)
+config.save_to_github(uri: str, token: str = None, dry_run: bool = False)
+```
+
+#### `Filter`
+
+Filtering rules for configuration keys.
+
+```python
+Filter(
+    include_regex: Pattern = None,
+    hierarchical_spec: Dict = None,
+    depth: int = None
+)
+```
+
+### Source Classes
+
+All sources implement the `Source` protocol with these methods:
+
+- `load(filter=None, depth=None) -> Dict[str, Any]`
+- `get(key: str) -> Any`
+- `set(key: str, value: Any)`
+- `unset(key: str)`
+- `save()`
+- `reload()`
+- `exists(key: str) -> bool`
+- `keys() -> List[str]`
+- `values() -> Dict[str, Any]`
+- `clear()`
+- `size() -> int`
+
+## 💻 CLI Usage
+
+Confetti includes a CLI for managing configurations:
+
+```bash
+# List all configuration sources
+confetti sources-list --env production
+
+# Get a specific configuration value
+confetti get DATABASE_URL --env production
+
+# Set a configuration value
+confetti set API_KEY "new_key" --env production --save
+
+# Remove a configuration value
+confetti unset DEBUG_MODE --env production --save
+
+# Sync to GitHub
+confetti sync-github github://owner/repo#production --env local --dry-run
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Development Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/confetti-dev/confetti.git
+cd confetti
+
+# Install with development dependencies
+pip install -e ".[dev]"
+
+# Run tests
+pytest
+
+# Run tests with coverage
+pytest --cov=confetti --cov-report=html
+
+# Run linting
+ruff check .
+black --check .
+mypy confetti
+
+# Format code
+black .
+ruff --fix .
+```
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Inspired by [python-dotenv](https://github.com/theskumar/python-dotenv) and [python-decouple](https://github.com/henriquebastos/python-decouple)
+- Built with modern Python best practices
+- Special thanks to all contributors
+
+## 🔗 Links
+
+- [PyPI Package](https://pypi.org/project/confetti/)
+- [GitHub Repository](https://github.com/confetti-dev/confetti)
+- [Documentation](https://confetti.readthedocs.io)
+- [Issue Tracker](https://github.com/confetti-dev/confetti/issues)
+- [Changelog](CHANGELOG.md)
+
+## 📊 Project Status
+
+- ✅ Production Ready
+- ✅ Actively Maintained
+- ✅ Semantic Versioning
+- ✅ Security Updates
+
+---
+
+<p align="center">Made with ❤️ by the Confetti Team</p>
