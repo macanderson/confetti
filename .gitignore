@@ -1,0 +1,36 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Testing artifacts
+.pytest_cache/
+.coverage
+.tox/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+*.env
+*.env.*
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# uv lock files
+uv.lock
