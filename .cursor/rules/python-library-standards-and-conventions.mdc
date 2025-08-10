@@ -1,0 +1,9 @@
+---
+globs: **/*.py
+alwaysApply: false
+description: |
+  This rule applies to all Python files in the project.
+  It enforces the use of the following standards and conventions:
+  - All Python files should be named like `*.py`
+  - All Python files should be placed in the `src` directory
+---
