@@ -1,4 +1,4 @@
-# Confetti 🎉
+# Confetti 🎉 - Environment-aware Configuration Management for Python 🐍
 
 [![PyPI Version](https://img.shields.io/pypi/v/confetti)](https://pypi.org/project/confetti/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/confetti)](https://pypi.org/project/confetti/)
@@ -524,7 +524,11 @@ environments:
       - path: ./secrets.env
       - uri: redis://localhost:6379
         writable: true
+<<<<<<< Updated upstream
   
+=======
+
+>>>>>>> Stashed changes
   development:
     sources:
       - path: ./config.dev.yaml
@@ -562,7 +566,11 @@ environments:
         filter:
           include_regex: "^(DATABASE_|REDIS_)"  # Only load keys starting with DATABASE_ or REDIS_
           depth: 3  # Maximum nesting depth for hierarchical data
+<<<<<<< Updated upstream
       
+=======
+
+>>>>>>> Stashed changes
       - path: ./app-config.json
         filter:
           hierarchical_spec:  # Selectively include nested keys
@@ -596,20 +604,35 @@ environments:
       - # Source location (one of these is required)
         path: <string>  # File path (relative or absolute)
         uri: <string>   # URI for remote sources (e.g., redis://...)
+<<<<<<< Updated upstream
         
+=======
+
+>>>>>>> Stashed changes
         # Optional source properties
         name: <string>  # Human-readable name for the source
         writable: <boolean>  # Whether this source can be written to (default: true)
         depth: <integer>  # Maximum depth for nested structure parsing
+<<<<<<< Updated upstream
         
+=======
+
+>>>>>>> Stashed changes
         # Filter configuration (optional)
         filter:
           # Include keys matching this regex pattern
           include_regex: <string>
+<<<<<<< Updated upstream
           
           # Depth limit for nested structures (can also be at source level)
           depth: <integer>
           
+=======
+
+          # Depth limit for nested structures (can also be at source level)
+          depth: <integer>
+
+>>>>>>> Stashed changes
           # Hierarchical specification for selective inclusion
           # Use true to include a key/path, nested objects to go deeper
           hierarchical_spec:
@@ -630,7 +653,11 @@ environments:
         filter:
           include_regex: "^(DATABASE_|API_|CACHE_)"
           depth: 3
+<<<<<<< Updated upstream
       
+=======
+
+>>>>>>> Stashed changes
       # JSON file with hierarchical filtering
       - path: ./config/services.json
         filter:
@@ -643,16 +670,28 @@ environments:
             cache:
               redis: true
             monitoring: false  # Exclude monitoring config
+<<<<<<< Updated upstream
       
       # Environment file (no filtering)
       - path: ./.env.production
         writable: false  # Read-only source
       
+=======
+
+      # Environment file (no filtering)
+      - path: ./.env.production
+        writable: false  # Read-only source
+
+>>>>>>> Stashed changes
       # Redis for dynamic configuration
       - uri: redis://prod-redis:6379/0
         name: "Dynamic Config"
         writable: true
+<<<<<<< Updated upstream
       
+=======
+
+>>>>>>> Stashed changes
       # GitHub environment (when implemented)
       - uri: github://myorg/myrepo#production
         name: "GitHub Secrets"
@@ -663,7 +702,11 @@ environments:
       - path: ./config/development.yaml
       - path: ./.env.local
         writable: true
+<<<<<<< Updated upstream
       
+=======
+
+>>>>>>> Stashed changes
   testing:
     sources:
       - path: ./config/test.yaml
@@ -675,12 +718,21 @@ environments:
 ### Filter Examples
 
 #### Regex Filter
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 ```yaml
 filter:
   include_regex: "^(DB_|API_)"  # Only keys starting with DB_ or API_
 ```
 
+<<<<<<< Updated upstream
 #### Hierarchical Filter
+=======
+#### Hierarchical
+
+>>>>>>> Stashed changes
 ```yaml
 filter:
   hierarchical_spec:
@@ -695,6 +747,10 @@ filter:
 ```
 
 #### Depth Limiting
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 ```yaml
 filter:
   depth: 2  # Only parse up to 2 levels deep
