@@ -1,0 +1,27 @@
+[project]
+name = "confetti"
+version = "0.1.0"
+description = "Compose configuration from multiple sources into a unified config with provenance and save semantics."
+authors = [{ name = "Confetti Authors" }]
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+dependencies = [
+  "pyyaml>=6.0.1",
+  "redis>=5.0.0",
+  "typer>=0.12.0",
+  "httpx>=0.27.0",
+]
+
+[project.urls]
+Homepage = "https://example.com"
+
+[project.scripts]
+confetti = "confetti.cli.__main__:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+# uv configuration placeholder

@@ -1,0 +1,57 @@
+# Developer Code of Conduct
+
+## Our Commitment
+
+We are committed to fostering an open, welcoming, and collaborative environment for all contributors to this open source project. We value diverse perspectives, constructive feedback, and professional conduct in all interactions.
+
+## Contribution Standards
+
+### Pull Requests
+
+* Write clear, descriptive commit messages and PR titles
+* Include comprehensive descriptions explaining the purpose and scope of changes
+* Reference relevant issues using proper GitHub linking syntax
+* Ensure all tests pass and code follows project style guidelines
+* Be responsive to feedback and engage constructively in code reviews
+* Keep PRs focused and reasonably sized for effective review
+
+### Code Review Process
+
+* Provide constructive, specific feedback focused on the code, not the person
+* Be respectful when suggesting improvements or alternatives
+* Acknowledge good work and creative solutions
+* Ask questions to understand context before making assumptions
+* Be patient with new contributors and provide helpful guidance
+
+### Issue Management
+
+* Search existing issues before creating new ones to avoid duplicates
+* Provide clear reproduction steps for bugs with relevant environment details
+* Use appropriate labels and follow issue templates when available
+* Be respectful in discussions and avoid inflammatory language
+* Stay on topic and keep conversations focused on the technical matter
+
+### Community Interaction
+
+* Be welcoming to newcomers and help them get started
+* Share knowledge and mentor others when possible
+* Respect different skill levels and learning styles
+* Give credit where credit is due
+* Collaborate openly and transparently
+
+## Unacceptable Behavior
+
+* Personal attacks, harassment, or discriminatory language
+* Spam, trolling, or deliberately disruptive behavior
+* Publishing private information without consent
+* Plagiarism or claiming others' work as your own
+* Ignoring maintainer decisions or project direction
+* Repeatedly submitting low-quality or off-topic contributions
+
+## Enforcement
+
+Project maintainers have the right and responsibility to remove, edit, or reject comments, commits, code, issues, and other contributions that do not align with this Code of Conduct. Violations may result in temporary or permanent bans from the project.
+
+## Reporting
+
+If you experience or witness unacceptable behavior, please report it to the project maintainers. All reports will be handled confidentially and fairly.
